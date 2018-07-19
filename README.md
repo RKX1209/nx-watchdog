@@ -1,10 +1,6 @@
-# hekate for 5.0.x
+# NX watchdog
 
-DO NOT UPDATE TO 5.0.2 FOR THIS
-
-Original by @nwert
-
-![Image of Hekate](https://upload.wikimedia.org/wikipedia/commons/f/fc/H%C3%A9cate_-_Mallarm%C3%A9.png)
+Watchdog implmentation based on hekate-ipl.
 
 Nintendo Switch bootloader, firmware patcher, and more.
 
