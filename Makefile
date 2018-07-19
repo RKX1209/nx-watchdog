@@ -29,6 +29,7 @@ OBJS = $(addprefix $(BUILD)/, \
 	sdmmc_driver.o \
 	sdram.o \
 	sdram_lp0.o \
+	timer.o \
 	tui.o \
 	util.o \
 	di.o \

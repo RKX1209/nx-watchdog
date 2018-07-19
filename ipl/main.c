@@ -46,6 +46,7 @@
 #include "se_t210.h"
 #include "hos.h"
 #include "pkg1.h"
+#include "timer.h"
 
 void panic(u32 val)
 {
@@ -234,6 +235,9 @@ void config_hw()
 	sdram_init();
 	//TODO: test this with LP0 wakeup.
 	sdram_lp0_save_params(sdram_get_params());
+
+        //RKX: for watchdog
+        timer_init();
 }
 
 //TODO: ugly.
@@ -451,7 +455,7 @@ int dump_emmc_part(char *sd_path, sdmmc_storage_t *storage, emmc_part_t *part)
 				0xFF0000FF, num, lba_curr, ++retryCount, 0xFFFFFFFF);
 
 			sleep(500000);
-			if (retryCount >= 3)	
+			if (retryCount >= 3)
 				goto out;
 		}
 		f_write(&fp, buf, NX_EMMC_BLOCKSIZE * num, NULL);
@@ -460,14 +464,14 @@ int dump_emmc_part(char *sd_path, sdmmc_storage_t *storage, emmc_part_t *part)
 		{
 			tui_pbar(&gfx_con, 0, gfx_con.y, pct);
 			prevPct = pct;
-		}	
+		}
 
 		lba_curr += num;
 		totalSectors -= num;
 		bytesWritten += num * NX_EMMC_BLOCKSIZE;
 
 		//force a flush after a lot of data if not splitting
-		if (numSplitParts == 0 && bytesWritten >= MULTIPART_SPLIT_SIZE) 
+		if (numSplitParts == 0 && bytesWritten >= MULTIPART_SPLIT_SIZE)
 		{
 			f_sync(&fp);
 			bytesWritten = 0;
@@ -510,7 +514,7 @@ static void dump_emmc_selected(dumpType_t dumpType)
 
 	int i = 0;
 	if (dumpType & DUMP_BOOT)
-	{	
+	{
 		static const u32 BOOT_PART_SIZE = 0x400000;
 
 		emmc_part_t bootPart;
@@ -529,7 +533,7 @@ static void dump_emmc_selected(dumpType_t dumpType)
 			sdmmc_storage_set_mmc_partition(&storage, i+1);
 			dump_emmc_part(bootPart.name, &storage, &bootPart);
 			gfx_putc(&gfx_con, '\n');
-		}		
+		}
 	}
 
 	if ((dumpType & DUMP_SYSTEM) || (dumpType & DUMP_USER) || (dumpType & DUMP_RAW))
@@ -554,7 +558,7 @@ static void dump_emmc_selected(dumpType_t dumpType)
 				gfx_putc(&gfx_con, '\n');
 			}
 		}
-		
+
 		if (dumpType & DUMP_RAW)
 		{
 			static const u32 RAW_AREA_NUM_SECTORS = 0x3A3E000;
@@ -570,7 +574,7 @@ static void dump_emmc_selected(dumpType_t dumpType)
 
 				dump_emmc_part(rawPart.name, &storage, &rawPart);
 				gfx_putc(&gfx_con, '\n');
-			}		
+			}
 		}
 	}
 
@@ -677,7 +681,7 @@ void about()
 	gfx_clear(&gfx_ctxt, 0xFF000000);
 	gfx_con_setpos(&gfx_con, 0, 0);
 
-	gfx_printf(&gfx_con, octopus, 0xFFFFCC00, 0xFFFFFFFF, 
+	gfx_printf(&gfx_con, octopus, 0xFFFFCC00, 0xFFFFFFFF,
 		0xFFFFCC00, 0xFFCCFF00, 0xFFFFCC00, 0xFFFFFFFF);
 
 	sleep(1000000);
@@ -738,7 +742,7 @@ void ipl_main()
 
 	//uart_send(UART_C, (u8 *)0x40000000, 0x10000);
 	//uart_wait_idle(UART_C, UART_TX_IDLE);
-	
+
 	display_init();
 	//display_color_screen(0xAABBCCDD);
 	u32 *fb = display_init_framebuffer();
